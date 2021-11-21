@@ -8,25 +8,29 @@ import time
 
 LOBSTERS_FEED_URL       = 'https://lobste.rs/rss'
 LOBSTERS_MINIMUM_SCORE  = 10
+LOBSTERS_LINK_ARTICLE   = False
 
 # Functions
 
-def fetch_article_score(url):
+def fetch_article_json(url):
     response = requests.get(url + '.json')
-    return response.json()['score']
+    return response.json()
 
 def fetch_all_articles(url=LOBSTERS_FEED_URL):
     feed = feedparser.parse(url)
 
     for entry in feed.entries:
+        json = fetch_article_json(entry.comments)
         yield {
-            'title'    : entry.title,
-            'author'   : entry.author.split('@')[0],
-            'link'     : entry.comments,
-            'published': entry.published,
-            'timestamp': entry.published_parsed,
-            'guid'     : entry.guid,
-            'score'    : fetch_article_score(entry.comments),
+            'title'     : entry.title,
+            'author'    : entry.author.split('@')[0],
+            'link'      : entry.link,
+            'comments'  : entry.comments,
+            'published' : entry.published,
+            'timestamp' : entry.published_parsed,
+            'guid'      : entry.guid,
+            'score'     : json['score'],
+            'commentnum': len(json['comments'])
         }
 
         time.sleep(0.5)   # Work around rate limit
@@ -43,14 +47,24 @@ def write_articles_feed(articles):
         print('''<item>
 <title>{article_title}</title>
 <author>{article_author}</author>
-<link>{article_link}</link>
+<link>{rss_link}</link>
 <guid isPermaLink="false">{article_guid}</guid>
 <pubDate>{article_published}</pubDate>
-</item>'''.format(article_title     = article['title'],
-                  article_author    = article['author'],
-                  article_link      = article['link'],
-                  article_guid      = article['guid'],
-                  article_published = article['published']))
+<description><![CDATA[
+<p>Article URL: <a href="{article_link}">{article_link}</a></p>
+<p>Comments URL: <a href="{article_commments}">{article_commments}</a></p>
+<p>Points: {article_score}</p>
+<p># Comments: {article_commentnum}</p>
+]]></description>
+</item>'''.format(rss_link           = article['link'] if LOBSTERS_LINK_ARTICLE else article['comments'],
+                  article_title      = article['title'],
+                  article_author     = article['author'],
+                  article_link       = article['link'],
+                  article_guid       = article['guid'],
+                  article_commments  = article['comments'],
+                  article_score      = article['score'],
+                  article_commentnum = article['commentnum'],
+                  article_published  = article['published']))
     print('''</channel>
 </rss>''')
 

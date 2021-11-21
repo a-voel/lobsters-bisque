@@ -4,8 +4,8 @@ Simple script to generate a RSS feed for [Lobsters](https://lobste.rs) that
 does the following:
 
 - Filter articles by a minimum score
-- Utilizes the comments link rather than original article link
-
+- Can utilize the comments link rather than original article link
+- Show comments and votes in description
 Inspired by [Hacker News RSS](https://edavis.github.io/hnrss/).
 
 # CRONTAB
