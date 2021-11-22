@@ -45,7 +45,7 @@ def write_articles_feed(articles):
 
     for article in sorted(articles, key=lambda a: a['timestamp'], reverse=True):
         print('''<item>
-<title>{article_title}</title>
+<title><![CDATA[{article_title}]]></title>
 <author>{article_author}</author>
 <link>{rss_link}</link>
 <guid isPermaLink="false">{article_guid}</guid>
